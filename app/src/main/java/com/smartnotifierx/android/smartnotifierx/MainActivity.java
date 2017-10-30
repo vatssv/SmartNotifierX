@@ -12,12 +12,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -59,24 +61,32 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        //setSupportActionBar(myToolbar);
         image = (ImageView) findViewById(R.id.imageBlur);
         Bitmap resultBmp = blur(this, BitmapFactory.decodeResource(getResources(), R.mipmap.background));
         image.setImageBitmap(resultBmp);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CALL_LOG},0);
             return;
-        }
+        }*/
+        permissionCheck(Manifest.permission.READ_CALL_LOG);
+        permissionCheck(Manifest.permission.READ_CONTACTS);
+        permissionCheck(Manifest.permission.READ_SMS);
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         logAdapter = new LogAdapter(detailsList);
         RecyclerView.LayoutManager lLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(lLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(logAdapter);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),DividerItemDecoration.VERTICAL);
-        recyclerView.addItemDecoration(dividerItemDecoration);
+        //DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),DividerItemDecoration.VERTICAL);
+        //recyclerView.addItemDecoration(dividerItemDecoration);
         initSwipe();
         getCallDetails();
     }
+
+
+
 
     @Override
     protected void onPostResume() {
@@ -196,6 +206,7 @@ public class MainActivity extends AppCompatActivity{
         logAdapter.notifyDataSetChanged();
         //cursor.close();
     }
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static Bitmap blur(Context context, Bitmap image) {
         int width = Math.round(image.getWidth() * BITMAP_SCALE);
         int height = Math.round(image.getHeight() * BITMAP_SCALE);
@@ -217,4 +228,10 @@ public class MainActivity extends AppCompatActivity{
         return outputBitmap;
     }
 
+    public void permissionCheck(String str) {
+        if (ActivityCompat.checkSelfPermission(this, str) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,new String[]{str},0);
+            return;
+        }
+    }
 }
